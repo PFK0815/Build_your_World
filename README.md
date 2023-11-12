@@ -6,7 +6,7 @@ Server at server folder(install packages with npm i first).
 
 Here are the files at github.
 
-________________________DE________________________
+DE
 Client und Server(german) Download.
 
 Client im Client ordner.
