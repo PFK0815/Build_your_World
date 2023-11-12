@@ -1,0 +1,18 @@
+{
+    "WORLDSETTINGS": {
+        "game": "default",
+        "autoSaveInterval": 5
+    },
+    "players": {
+        "NEWUSERS": {
+            "Allowed": [
+                "CHAT",
+                "INTERACT"
+            ],
+            "banned": false,
+            "ServerLoginHash": null,
+            "inventory": {}
+        }
+    },
+    "map":"[[]]"
+}
