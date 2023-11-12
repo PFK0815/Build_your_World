@@ -1,0 +1,21 @@
+.block{
+	min-height: 50px;
+	min-width: 50px;
+	padding: 0px;
+	border: 0px solid #000000;
+}
+#map{
+	border: 2px solid #000000;
+	border-radius: 2px;
+	border-spacing: 0px;
+	max-width: 550px;
+	max-height: 550px;
+	overflow-x: hidden;
+	overflow-y: hidden;
+	background-color: #FF0000;
+	display: block;
+}
+#map tr{
+	height: 50px;
+	width: calc(50px * 11) !important;
+}

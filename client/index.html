@@ -1,0 +1,20 @@
+<script src="md5.js"></script>
+<script>
+	String.prototype.md5 = function(){return MD5(this)}
+	function getRandomInt(min, max){return Math.floor(Math.random()*(max-min)+min)}
+</script>
+Server: <input id="server" placeholder="ws://masterfox.de:8888/"><br />
+Username: <input id="username"><br />
+Password: <input type="password" id="password"><br />
+<button onclick='requestSave(); window.location.href = `game.html?server=${server.value}&user=${username.value}&hash=${(`USER"${username.value}"WITHPWDHASHmd5("${password.value.md5()}")`).md5()}`'>Login</button>
+<script>
+    const oldServer = localStorage.getItem("server");
+    server.value = oldServer || "ws://masterfox.de:8888/";
+    const oldUsername = localStorage.getItem("username");
+    username.value = oldUsername || `Player${getRandomInt(1000, 9999)}`;
+
+    function requestSave(){
+        if(server.value != oldServer){if(confirm("Save server?")){window.localStorage.setItem("server", server.value);}}
+        if(username.value != oldUsername){if(confirm("Save username?")){window.localStorage.setItem("username", username.value);}}
+    }
+</script>

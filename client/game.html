@@ -1,0 +1,115 @@
+<script src="md5.js"></script>
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Build your world</title>
+		<link rel="shortcut icon" href="logo.png" type="image/png">
+		<script src="./language.js"></script>
+		<script src="./script.js"></script>
+		<link rel="stylesheet" href="./style.css">
+		<style id="BLOCKSTYLES"></style>
+	</head>
+	<body>
+		Item = <select id="item"></select>
+		<button onclick="makeItem()" id="makeItemLANGSUPPORT">Make item</button><br />
+		<table id="map"></table><br />
+		<div id="blockInfo">
+			ID: <span id="blockID@blockInfo"></span><br />
+			pos: <span id="blockcoord@blockInfo"></span>
+		</div><br />
+		<div>
+			mobile:
+			<button onclick="map.scrollLeft += -50; updateScroll()" style="font-size: xx-large;">&lt;</button>
+			<button onclick="map.scrollTop += -50; updateScroll()" style="font-size: xx-large;">/\</button>
+			<button onclick="map.scrollLeft += 50; updateScroll()" style="font-size: xx-large;">&gt;</button>
+			<button onclick="map.scrollTop += 50; updateScroll()" style="font-size: xx-large;">\/</button><br />
+			<label>Baumodus: <input type="checkbox" id="build"></label>
+		</div>
+		<br />
+		<button onclick='requestChangePwd();' id="changePWDLANGSUPPORT">Change Password</button><br />
+		<input id="chatMSG" style="width: 50%;"><button onclick='chatMSGSEND("INPUT: "+chatMSG.value);client.send(JSON.stringify({type:"Chat", msg:chatMSG.value}));chatMSG.value="";'>Send</button><br />
+		<div id="chat" style="max-height: 200px; overflow-y: scroll;"></div>
+		<a href="docs.html">Gamedocs</a>
+	</body>
+</html>
+<script>
+	String.prototype.md5 = function(){return MD5(this)}
+	const urlParams = new URLSearchParams(window.location.search);
+	function getRandomInt(min, max){return Math.floor(Math.random()*(max-min)+min)}
+	const isFromLoginWebsite = ( urlParams.has("server") && urlParams.has("user") && urlParams.has("hash") );
+	if(!isFromLoginWebsite){
+		alert(translate("notfromlogin@server"));
+		window.location.href = "index.html"
+	}
+	var serveraddresse = urlParams.get("server");
+	var user = urlParams.get("user");
+	var serverhash = urlParams.get("hash");
+	const client = new WebSocket(serveraddresse); // Ändern Sie die URL entsprechend Ihrem Server
+	
+	var timeoutMS = 30000;
+	var pingTimeout, sendPong;
+	var lastPongTime = Date.now();
+	
+	client.onopen = () => {
+		console.log('Du bist mit dem WebSocket-Server verbunden.');
+		lastPongTime = Date.now()
+		sendPong = setTimeout(function sendPongFUNC(){
+			sendPong = setTimeout(sendPongFUNC, timeoutMS-5000-(Date.now()-(lastPongTime+5000)));
+			client.send(JSON.stringify({type:"Pong"}));
+			lastPongTime = Date.now();
+		}, timeoutMS-5000);
+		clearTimeout(pingTimeout);
+		pingTimeout = setTimeout(function(){
+			alert(translate("timeout@server"));
+			client.close();
+			clearInterval(sendPong)
+		}, timeoutMS);
+		client.send(JSON.stringify({type:"AUTH", PLAYERNAME:user, hash:serverhash}))
+	};
+	var y = 0;
+	client.onmessage = (message) => {
+		//console.log('Von Server: '+message.data);
+		message = JSON.parse(message.data);
+		if(message.type == "Ping"){
+			clearTimeout(pingTimeout);
+			pingTimeout = setTimeout(function(){
+				console.log("Server hat kein Signal innerhalb Timeoutzeit gegeben!");
+				client.close();
+				clearInterval(sendPong)
+			}, timeoutMS);
+		}else if(message.type == "JSalert"){
+			alert("Server: "+message.text);
+		}else if(message.type == "GameMap"){
+			var tableROW = document.createElement("tr");
+			map.appendChild(tableROW);
+			message.map.forEach((CELL, x) => {
+				tableROW.innerHTML += "<td id=\""+`y${y}x${x}`+"\" class='block' blockID='"+CELL+"' oncontextmenu='setBlock(this, event);event.preventDefault();event.preventDefault();' onclick='if(build.checked){setBlock(this, event); return} breakBlock(this)' onmouseenter='document.getElementById(\"blockID@blockInfo\").innerHTML = this.getAttribute(\"blockID\"); document.getElementById(\"blockcoord@blockInfo\").innerHTML = this.id'></td>";
+			});
+			y ++;
+		}else if(message.type == "AllItems"){
+			allItems = message.allItems;
+		}else if(message.type == "BLOCKSTYLES"){
+			BLOCKSTYLES.innerHTML = message.BLOCKSTYLES;
+		}else if(message.type == "UpdateInventoryITEMONLY"){
+			player.inventory[message.itemid] = message.count;
+			document.querySelector(".itemSelect[itemID~=\""+message.itemid+"\"]").innerHTML = translateFROMOBJ(allItems[message.itemid].itemname)+" "+player.inventory[message.itemid];
+		}else if(message.type == "UpdateInventory"){
+			player.inventory = message.inventory;
+			updateInventory();
+		}else if(message.type == "BlockChange"){
+			document.querySelector(`.block#y${message.coord[0]}x${message.coord[1]}`).setAttribute("blockID", message.newID);
+		}else if(message.type == "Chat"){
+			chatMSGSEND(message.msg);
+		}
+	};
+	
+	client.error = (error) => {
+		console.error('Verbindungsfehler: ' + error.message);
+	};
+	
+	client.onclose = () => {
+		console.log('Verbindung zum Server getrennt.');
+		clearTimeout(sendPong);
+		clearTimeout(pingTimeout);
+	};
+</script>
