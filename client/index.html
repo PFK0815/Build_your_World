@@ -9,7 +9,7 @@ Password: <input type="password" id="password"><br />
 <button onclick='requestSave(); window.location.href = `game.html?server=${server.value}&user=${username.value}&hash=${(`USER"${username.value}"WITHPWDHASHmd5("${password.value.md5()}")`).md5()}`'>Login</button>
 <script>
     const oldServer = localStorage.getItem("server");
-    server.value = oldServer || "ws://masterfox.de:8888/";
+    server.value = oldServer || "ws://localhost:8888/";
     const oldUsername = localStorage.getItem("username");
     username.value = oldUsername || `Player${getRandomInt(1000, 9999)}`;
 
